@@ -37,18 +37,12 @@ async def main() -> None:
     cfg = get_config("cro")
     ws_url, rest_url = band_endpoints()
 
-    # CrewAI uses LiteLLM. Set the right env vars + model prefix per provider:
-    #   gemini  → "gemini/<model>"
-    #   groq    → "groq/<model>"
-    #   featherless (OpenAI-compatible) → "openai/<model>" + OPENAI_API_BASE
+    # CrewAI uses LiteLLM. Set env vars + model prefix per provider.
     provider = cfg["provider"]
     if provider == "gemini":
         os.environ.setdefault("GEMINI_API_KEY", cfg["api_key"])
         os.environ.setdefault("GOOGLE_API_KEY", cfg["api_key"])
         model_str = f"gemini/{cfg['model']}"
-    elif provider == "groq":
-        os.environ.setdefault("GROQ_API_KEY", cfg["api_key"])
-        model_str = f"groq/{cfg['model']}"
     else:  # featherless (OpenAI-compatible)
         os.environ["OPENAI_API_KEY"] = cfg["api_key"]
         os.environ["OPENAI_API_BASE"] = cfg["base_url"]

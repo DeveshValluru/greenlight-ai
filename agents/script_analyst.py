@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 
 from band import Agent
 from band.adapters import GoogleADKAdapter
@@ -34,7 +35,6 @@ async def main() -> None:
     ws_url, rest_url = band_endpoints()
 
     # google-adk reads GOOGLE_API_KEY from env directly.
-    import os
     os.environ.setdefault("GOOGLE_API_KEY", cfg["api_key"])
 
     adapter = GoogleADKAdapter(

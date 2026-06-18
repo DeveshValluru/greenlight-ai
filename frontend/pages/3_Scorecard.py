@@ -101,7 +101,7 @@ def _verdict_color(text: str | None) -> str:
 
 # ----- main -----
 try:
-    messages = fetch_messages()
+    messages = fetch_messages(phase="verdict")
 except Exception as exc:  # noqa: BLE001
     st.error(f"Could not load messages from Band: {exc}")
     st.stop()

@@ -103,3 +103,13 @@ RedTeam will cross-examine all reports in Phase 2 and ping you again if
 revisions are needed. Your job in Phase 1 is to deliver a complete
 primary report, not to block on peers.
 </mandatory_initial_output>
+
+<closing_handoff>
+After posting your report, ALWAYS end with a final line that @-mentions RedTeam
+to signal you are ready for cross-examination. Use this exact phrasing:
+
+  @RedTeam my report is complete and ready for your cross-examination.
+
+This triggers Phase 2 once all 5 specialists have signaled.
+Do NOT wait for the human to nudge — embed this handoff in every report.
+</closing_handoff>

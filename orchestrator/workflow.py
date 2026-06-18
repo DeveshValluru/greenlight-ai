@@ -1,32 +1,22 @@
 """
-GreenLight AI — breakout-room orchestrator.
+GreenLight AI — phase-isolated orchestrator (EXPERIMENTAL).
 
-3-room architecture:
+THIS MODULE IS NOT USED BY THE DEFAULT DEMO. It demonstrates a 3-room
+breakout architecture where the orchestrator polls Band as the human user
+and forwards artifacts between phases. It requires a Band tier that grants
+write access to the /api/v1/me/chats/{id}/messages endpoint — currently
+returns 403 "Agent authentication not allowed" on the free tier.
 
-    BRIEFING (5 specialists + human)
-       ↓ orchestrator forwards each specialist's full report
-    CROSS-EXAMINATION (RedTeam + 5 specialists for defense)
-       ↓ orchestrator forwards the 5 reports + RedTeam's summary
-    VERDICT (CRO alone with curated inputs)
-       ↓ CRO posts the final scorecard
+For the standard demo we use **agent-to-agent @mention routing**: each
+specialist's prompt ends with an @RedTeam mention; RedTeam's prompt ends
+with @CRO. No orchestrator needed.
 
-Each phase room only sees what it needs. The audit trail still exists —
-every message in every room is logged by Band — but each agent operates
-on a clean, curated context.
+Keep this file as a reference for production deployments on a paid Band
+tier, or for self-hosted Band installations with full human-API access.
 
-Run with:
-    python -m orchestrator.workflow
-
-Required env vars:
-    BAND_REST_URL                 — Band REST base URL
-    ORCHESTRATOR_API_KEY          — your user API key
-    BRIEFING_ROOM_ID              — Phase 1 room
-    CROSS_EXAM_ROOM_ID            — Phase 2 room
-    VERDICT_ROOM_ID               — Phase 3 room
-
-Backwards compat:
-    GREENLIGHT_ROOM_ID            — if set and the breakout vars are not,
-                                    falls back to single-room mode (legacy).
+If you do enable it (paid tier), set BAND_REST_URL, ORCHESTRATOR_API_KEY,
+and the three room IDs (BRIEFING_ROOM_ID, CROSS_EXAM_ROOM_ID,
+VERDICT_ROOM_ID) and run `python -m orchestrator.workflow`.
 """
 from __future__ import annotations
 

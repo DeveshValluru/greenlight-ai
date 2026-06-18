@@ -1,58 +1,76 @@
 # 🎬 GreenLight AI
 
 > **The AI investment committee that never sleeps.**
-> 7 specialized agents · 4 framework adapters · 3 LLM providers · 1 Band room.
+> 7 specialized agents · 3 framework adapters · 4 models · 1 Band room.
 
-GreenLight AI is a multi-agent due diligence system for film investors. A
-producer uploads a project package (script, budget, crew, deal memos) and a
-team of seven AI agents collaboratively analyzes it through a Band chat room
-— auditing script complexity, budget adequacy, market viability, legal
-exposure, and team track record — before a Red Team agent cross-examines
-the findings and a Chief Risk Officer delivers a final investment verdict.
+GreenLight AI is a multi-agent due-diligence system for film investors. A
+producer pastes a project package (script, budget, crew, deal memos) into a
+Band chat room. Seven specialized AI agents then collaboratively analyze it
+through **agent-to-agent @mention routing** — auditing script complexity,
+budget adequacy, market viability, legal exposure, and team track record —
+before a Red Team agent cross-examines the findings and a Chief Risk Officer
+delivers a final investment verdict.
 
 Built for the [Band of Agents Hackathon](https://lablab.ai/ai-hackathons/band-of-agents-hackathon)
 (Track 3 — Regulated & High-Stakes Workflows).
 
 ---
 
-## Architecture — phase-isolated breakout rooms
+## Architecture — chat-as-protocol
+
+GreenLight uses Band's `@mention` routing as its native coordination protocol.
+There is **no central orchestrator**. Each agent's prompt ends with a handoff
+@mention to the next phase, so the chain self-propagates through Band:
 
 ```
-ROOM 1 — Briefing                ROOM 2 — Cross-Examination       ROOM 3 — Verdict
-─────────────────────            ─────────────────────────        ────────────────
-You + 5 specialists       ──▶    You + RedTeam + 5 specialists   ──▶    You + CRO
-
-@ScriptAnalyst, @BudgetAuditor,  Orchestrator forwards the 5     Orchestrator forwards
-@MarketIntel, @LegalEagle,       reports cleanly. RedTeam runs   reports + RedTeam
-@TalentScout deliver structured  cross-examination, issues       summary. CRO produces
-Phase 1 reports.                 challenges (C-1..C-N), tracks   the final scorecard +
-                                 resolutions, posts summary.     verdict.
+Human posts kickoff (@-mentions 5 specialists)
+   │
+   ▼
+Phase 1 — 5 specialists analyze in parallel
+   • @ScriptAnalyst      complexity, VFX, locations, shoot days
+   • @BudgetAuditor      cross-reference VFX/locations/days vs budget
+   • @MarketIntel        comparable films + revenue projections
+   • @LegalEagle         IP, guild, insurance, completion bond
+   • @TalentScout        track record + execution risk
+   │
+   │  Each specialist ends its report with: "@RedTeam ready for cross-examination."
+   ▼
+Phase 2 — @RedTeam adversarial cross-examination
+   • Reads all 5 reports
+   • Issues 3–7 formal CHALLENGE [C-N] entries
+   • Tracks RESOLVED / PARTIAL / UNRESOLVED
+   • Ends with: "@CRO ready for final scorecard."
+   ▼
+Phase 3 — @CRO synthesis
+   • Weighted scorecard (Budget 25%, Market 25%, Script 20%, Legal 15%, Talent 15%)
+   • Verdict: 🟢 GREENLIGHT (70+) / 🟡 CONDITIONAL (40–69) / 🔴 PASS (<40)
+   • Top 5 risks + conditions for approval
 ```
 
-Each phase room only sees what it needs. The orchestrator
-(`orchestrator/workflow.py`) watches Room 1 for completion markers,
-captures each specialist's report, and forwards them as clean messages
-into Room 2 — and similarly Room 2 → Room 3. Full architecture details
-in [docs/breakout_rooms.md](docs/breakout_rooms.md).
+Every message — analysis, challenge, defense, revision, verdict — lives in
+the same Band room. **The chat history IS the audit trail.**
 
-**Single-room fallback:** if you leave the breakout room IDs unset, the
-system runs all 7 agents in the legacy single room (good for quick
-tests).
+### Agent ↔ framework ↔ model matrix
 
-### Agent ↔ framework ↔ provider matrix
+Different agents use different framework adapters and different models, chosen
+to match each agent's workload tier:
 
-| Agent | Framework adapter | Provider (demo mode) | Model |
-|-------|------------------|----------------------|-------|
-| @ScriptAnalyst | Google ADK | Gemini (free) | gemini-2.5-flash |
-| @BudgetAuditor | LangGraph | Groq (free) | llama-3.3-70b-versatile |
-| @MarketIntel | Google ADK | Gemini (free) | gemini-2.5-flash |
-| @LegalEagle | LangGraph | Featherless (trial) | Llama-3.3-70B-Instruct |
-| @TalentScout | LangGraph | Groq (free) | qwen/qwen3-32b |
-| @RedTeam | Google ADK | Gemini (free) | gemini-2.5-flash |
-| @CRO | CrewAI | Featherless (trial) | DeepSeek-R1-Distill-Llama-70B |
+| Agent | Framework | Model | Tier | Why this model |
+|-------|-----------|-------|------|---------------|
+| **@ScriptAnalyst** | Google ADK | Gemini 2.5 Flash | light | document parse + structure |
+| **@BudgetAuditor** | LangGraph | Gemini 2.5 Pro | heavy | cross-reference numeric data across reports |
+| **@MarketIntel** | Google ADK | Gemini 2.5 Flash | light | knowledge retrieval of comparable films |
+| **@LegalEagle** | LangGraph | Featherless Llama 3.3 70B | domain | legal/compliance domain coverage |
+| **@TalentScout** | LangGraph | Gemini 2.5 Flash | light | personnel evaluation |
+| **@RedTeam** | Google ADK | Gemini 2.5 Pro | heavy | adversarial reasoning across 5 reports |
+| **@CRO** | CrewAI | Featherless DeepSeek R1 70B | domain | structured weighted-score synthesis |
 
-In **dev mode** (`LLM_MODE=dev`) every agent routes through Gemini so the
-Featherless trial token budget is preserved for demo recording.
+That's **3 framework adapters · 2 providers · 4 distinct models** running
+together through Band's protocol. The routing logic lives in
+[agents/llm_router.py](agents/llm_router.py).
+
+If `FEATHERLESS_API_KEY` isn't set, the two Featherless slots fall back to
+Gemini Flash automatically so local dev never blocks.
 
 ---
 
@@ -61,13 +79,13 @@ Featherless trial token budget is preserved for demo recording.
 ```
 greenlight-ai/
 ├── agents/                 # one Python file per agent + llm_router.py
-├── prompts/                # v2 system prompts (XML-structured, evidence-cited)
-├── orchestrator/           # phase-transition controller
-├── frontend/               # Streamlit dashboard (Upload, Debate, Scorecard)
-├── demo_data/              # "The Deep Horizon" sample project
+├── prompts/                # v2 XML-structured prompts with handoff blocks
+├── frontend/               # Streamlit (Upload + Debate + Scorecard)
+├── demo_data/              # "The Deep Horizon" sample project + build helper
 ├── config/                 # agent_config.yaml.example
-├── docs/                   # architecture + pitch deck outline
-├── run_all_agents.py       # launcher for all 7 agent processes
+├── orchestrator/           # EXPERIMENTAL polling orchestrator (paid Band tier)
+├── docs/                   # architecture notes, pitch deck, demo script
+├── run_all_agents.py       # launches all 7 agent processes
 ├── requirements.txt
 ├── pyproject.toml
 └── .env.example
@@ -80,118 +98,161 @@ greenlight-ai/
 ### 0. Prerequisites
 - Python 3.10+
 - A [Band](https://app.band.ai) account
-- Free API keys: [Gemini](https://aistudio.google.com/app/apikey), [Groq](https://console.groq.com/keys)
-- Featherless trial key with promo `BOA26` (for partner-prize eligibility)
+- A free [Gemini](https://aistudio.google.com/app/apikey) API key
+- *(Optional)* A [Featherless](https://featherless.ai) trial key with promo
+  `BOA26` — required for the multi-provider showcase. Without it, the two
+  Featherless agents fall back to Gemini Flash automatically.
 
 ### 1. Install
 ```bash
-git clone <this-repo>
+git clone https://github.com/DeveshValluru/greenlight-ai.git
 cd greenlight-ai
 python -m venv .venv
-source .venv/bin/activate    # Windows: .venv\Scripts\activate
+.venv\Scripts\activate          # Windows
+# source .venv/bin/activate     # macOS / Linux
 pip install -r requirements.txt
 ```
 
-### 2. Register Band agents
-For each of the 7 agents, on https://app.band.ai/agents:
-1. Click **New Agent → External Agent**
-2. Name it exactly as listed in the matrix above (`ScriptAnalyst`, etc.)
-3. Copy the UUID and API key (the key is shown only once)
+If `pip install` hits `resolution-too-deep`, install in batches — see
+[docs/HANDOFF.md §11.6](docs/HANDOFF.md).
 
-Then copy the template and fill in the values:
+### 2. Register agents on Band
+For each of the 7 agents at https://app.band.ai/agents:
+1. Click **New Agent → External Agent**
+2. Name it `ScriptAnalyst`, `BudgetAuditor`, `MarketIntel`, `LegalEagle`,
+   `TalentScout`, `RedTeam`, `CRO` (exactly these names — they're the
+   @mention handles)
+3. Copy the **agent UUID** and **API key** (key shown only once)
+
+Then:
 ```bash
 cp config/agent_config.yaml.example config/agent_config.yaml
-# edit config/agent_config.yaml
+# fill in the UUIDs and API keys
 ```
 
-### 3. Add env vars
+### 3. Set up environment variables
 ```bash
 cp .env.example .env
-# edit .env with your LLM provider keys and Band room ID
+# edit .env — minimum required: GOOGLE_API_KEY and GREENLIGHT_ROOM_ID
 ```
 
-### 4. Run the agents
+### 4. Create a Band chat room
+- Create one chat room in Band UI
+- Add all 7 agents as participants
+- Copy the room UUID into `.env` as `GREENLIGHT_ROOM_ID`
+
+### 5. Run the agents
 ```bash
 python run_all_agents.py
 ```
 
-All seven agent processes start. Each connects to Band via WebSocket and
-listens for messages where it is @mentioned.
+Seven processes spin up — each connects to Band via WebSocket and listens
+for messages where it is @-mentioned.
 
-### 5. Launch the frontend
-In a second terminal:
+### 6. Launch the Streamlit frontend (optional)
 ```bash
 streamlit run frontend/app.py
 ```
 
-Then open the URL Streamlit prints. Use the **Upload** page to submit the
-sample project, **Debate** to watch the agents work, and **Scorecard** for
-the final verdict.
+The Streamlit UI is a convenience wrapper:
+- **Upload** — drag in your script / budget / crew, click "Copy kickoff to
+  clipboard", paste into the Band room
+- **Debate** — live read of the room conversation (uses an agent's API key)
+- **Scorecard** — parses the CRO's final scorecard into a radar chart
 
-### 6. Run the orchestrator (optional)
-```bash
-python -m orchestrator.workflow
-```
+You can skip Streamlit entirely and drive the demo from the Band chat UI.
 
-The orchestrator polls the Band room, detects when each phase finishes, and
-posts the trigger for the next phase. Without it, you can drive the phase
-transitions manually from the Band UI.
+### 7. Kick it off
+In the Band chat room, paste the kickoff (or your own project) starting
+with `@ScriptAnalyst @BudgetAuditor @MarketIntel @LegalEagle @TalentScout`
+and the project data below it. Within ~2 minutes you'll see all 5 reports,
+then RedTeam's cross-examination, then CRO's verdict — all driven by the
+agents @mentioning each other.
 
 ---
 
-## Demo data
+## "The Deep Horizon" demo data
 
-`demo_data/` contains **"The Deep Horizon"** — a $7.26M sci-fi thriller with
-seven deliberate red flags planted across the package. The agents should find:
+[demo_data/](demo_data) contains a $7.26M sci-fi-thriller package with
+seven planted red flags. The agents should find:
 
-1. Marine unit is budgeted at $0 but the script requires extensive underwater work
-2. Aerial unit is budgeted at $0 but Act 3 needs helicopter shots
-3. E&O insurance is $0 (mandatory for distribution)
-4. Completion bond is $0 (typically required for budgets > $2M)
-5. VFX budget is ~$46K/shot vs $80–150K industry minimum for water/CG work
-6. Contingency is 4.1% vs 10% industry standard
-7. No A-list cast attached, but market projections may assume star-driven comps
+1. **Marine unit is budgeted at $0** but the script needs underwater filming
+2. **Aerial unit is budgeted at $0** but Act 3 needs helicopter shots
+3. **E&O insurance is $0** — mandatory for distribution
+4. **Completion bond is $0** — required for budgets > $2M
+5. **VFX is $46K/shot vs $80–150K** industry minimum for water/CG work
+6. **Contingency is 4.1% vs 10%** industry standard
+7. **No A-list cast** attached, but market projections may assume star power
 
-If the demo is working, **@RedTeam** will surface the VFX shortfall by
-comparing **@ScriptAnalyst**'s shot count against **@BudgetAuditor**'s
-per-shot figure. That cross-agent insight is the killer finding — no single
-agent could produce it.
+If the system is working, **@RedTeam surfaces the ~$1.5M VFX shortfall by
+comparing @ScriptAnalyst's shot count against @BudgetAuditor's per-shot
+figure**. That cross-agent insight is the killer finding — no single agent
+could have produced it.
+
+To build a kickoff message from any mix of PDFs / CSVs / JSONs / TXT files:
+```bash
+python demo_data/build_kickoff.py --script my_script.pdf --budget my_budget.csv
+```
+
+The message is built and copied to your clipboard. Paste into Band, send.
 
 ---
 
 ## Tech stack
 
 - **[Band](https://band.ai)** — chat-room coordination, @mention routing,
-  audit trail
-- **[band-sdk](https://docs.band.ai)** — multi-framework adapter layer
-  (Anthropic, LangGraph, CrewAI, PydanticAI, Google ADK)
-- **[Streamlit](https://streamlit.io)** — frontend dashboard
+  agent registration, audit trail
+- **[band-sdk](https://docs.band.ai)** — Python SDK with framework adapters
+  (Google ADK, LangGraph, CrewAI, PydanticAI, Anthropic — we use 3)
+- **[Streamlit](https://streamlit.io)** — frontend wrapper
 - **[Plotly](https://plotly.com)** — radar chart on the scorecard
+
+---
+
+## What about the orchestrator?
+
+[orchestrator/workflow.py](orchestrator/workflow.py) is an **experimental**
+polling orchestrator that watches each phase room and forwards artifacts
+between phases. It requires write access to Band's `/api/v1/me/chats/...`
+endpoint, which a paid Band tier exposes but the free tier does not.
+
+**The default demo does not use the orchestrator.** Agent-to-agent @mention
+handoff (configured in [prompts/](prompts)) makes it unnecessary. We've left
+the orchestrator in the repo as a reference for production deployments on
+paid Band tiers.
+
+Breakout-room architecture (3 phase-isolated rooms with orchestrator
+forwarding) is documented at [docs/breakout_rooms.md](docs/breakout_rooms.md)
+for the same reason.
 
 ---
 
 ## Hackathon submission checklist
 
-- [x] Public GitHub repository
-- [x] At least 3 agents collaborating through Band ✅ (we have 7)
-- [x] Cross-framework demonstration ✅ (4 adapters)
-- [x] Multi-provider demonstration ✅ (3 providers)
-- [ ] Cover image (TODO: add to `frontend/assets/`)
-- [ ] Demo video (script in `docs/demo_script.md`)
-- [ ] Pitch deck (outline in `docs/pitch_deck.md`)
-- [ ] Live demo URL (deploy `streamlit run frontend/app.py` to Streamlit Cloud)
+- [x] Public GitHub repository — https://github.com/DeveshValluru/greenlight-ai
+- [x] ≥ 3 agents collaborating through Band — we have 7
+- [x] Cross-framework demonstration — 3 adapters (Google ADK, LangGraph, CrewAI)
+- [x] Multi-model demonstration — 4 models (Flash, Pro, Llama, DeepSeek)
+- [x] Multi-provider demonstration — Gemini + Featherless
+- [ ] Cover image
+- [ ] Demo video (script in [docs/demo_script.md](docs/demo_script.md))
+- [ ] Pitch deck (outline in [docs/pitch_deck.md](docs/pitch_deck.md))
+- [ ] Live demo URL (deploy `frontend/app.py` to Streamlit Cloud)
 
 ---
 
 ## Credits
 
 Built for the Band of Agents Hackathon, June 2026.
-Prompt design draws on research from MetaGPT, PROCLAIM, DebateCV,
-AgenticSimLaw, and Anthropic's published best practices.
+Prompt design draws on published research: **MetaGPT** (structured artifact
+handoffs), **PROCLAIM 2026** (courtroom-style adversarial debate),
+**DebateCV WWW 2026** (opposing debaters), **AgenticSimLaw** (private
+reasoning), **Nature 2026** (adversarial-agent safety guardrails), and
+**Anthropic 2025–2026** best practices (XML-tagged prompts, self-verification).
 
 ## License
 
-MIT. See `LICENSE`.
+MIT. See [LICENSE](LICENSE).
 
 ## Disclaimer
 
