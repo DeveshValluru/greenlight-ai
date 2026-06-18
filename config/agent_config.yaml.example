@@ -1,0 +1,38 @@
+# ============================================================
+# Band agent credentials — copy to agent_config.yaml
+# Each developer creates their own copy; never commit the real file.
+#
+# To populate:
+#   1. Go to https://app.band.ai/agents
+#   2. Create a new External Agent for each name below
+#   3. Copy the agent UUID and API Key (key is shown only ONCE)
+#   4. Paste them into agent_config.yaml
+# ============================================================
+
+script_analyst:
+  agent_id: "uuid-from-band-dashboard"
+  api_key: "band-api-key-for-script-analyst"
+
+budget_auditor:
+  agent_id: "uuid-from-band-dashboard"
+  api_key: "band-api-key-for-budget-auditor"
+
+market_intel:
+  agent_id: "uuid-from-band-dashboard"
+  api_key: "band-api-key-for-market-intel"
+
+legal_eagle:
+  agent_id: "uuid-from-band-dashboard"
+  api_key: "band-api-key-for-legal-eagle"
+
+talent_scout:
+  agent_id: "uuid-from-band-dashboard"
+  api_key: "band-api-key-for-talent-scout"
+
+red_team:
+  agent_id: "uuid-from-band-dashboard"
+  api_key: "band-api-key-for-red-team"
+
+cro:
+  agent_id: "uuid-from-band-dashboard"
+  api_key: "band-api-key-for-cro"

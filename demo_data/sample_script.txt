@@ -1,0 +1,99 @@
+TITLE: "THE DEEP HORIZON"
+GENRE: Sci-Fi Thriller
+WRITER: Jordan Chen (fictional, first-time produced credit)
+DRAFT: Production Treatment, June 2026 — 110 pages
+
+LOGLINE
+When a deep-sea research station discovers an alien signal emanating from the
+Mariana Trench, a team of scientists must descend to the ocean floor before a
+rival military operation seals the site — but the signal is changing everyone
+who hears it.
+
+===========================================================
+TREATMENT SUMMARY
+===========================================================
+
+ACT 1 (pp 1-30) — SURFACE
+-----------------------------------------------------------
+INT. NOAA HEADQUARTERS, WASHINGTON DC — DAY
+Establishing montage. Director MIRA HASSAN (40s, lead) briefs the
+inter-agency team. Introduces the alien signal. (4 speaking roles)
+
+EXT. PACIFIC OCEAN, AT SEA — DAY (MARINE UNIT)
+The research vessel "Horizon" rendezvouses with the descent submersible.
+Helicopter inserts equipment. Drone footage establishes scale.
+
+INT. RESEARCH VESSEL HORIZON — VARIOUS
+Lab scenes, crew introductions: DR. ELIAS PARK (40s, lead),
+COMMANDER REYES (50s, lead), JUNIOR TECH AARON (20s, supporting).
+Five additional supporting roles (vessel crew). Eight day players (boat
+hands, comms staff, briefing extras).
+
+Total Act 1 VFX: ~5 shots (drone establishing, signal visualization, sonar UI)
+Total Act 1 locations: 4 interior, 2 exterior (sea)
+
+ACT 2 (pp 31-85) — DESCENT
+-----------------------------------------------------------
+EXT. UNDERWATER, DEEP OCEAN — VARIOUS (UNDERWATER UNIT + CG)
+Multiple deep-sea diving sequences. Submersible POV plates.
+Practical underwater photography combined with CG environments.
+At least 15 dedicated VFX shots across this stretch.
+
+INT. DEEP-SEA STATION (PRACTICAL SET + VFX EXTENSIONS)
+The team boards an abandoned research station 11km down. Approximately
+4,000 sq ft practical set build is required. Window views are full CG
+ocean environments. 20+ VFX shots for window extensions, instrument
+panels, holographic displays.
+
+EXT. UNDERWATER — ALIEN BIOLUMINESCENT ENVIRONMENT (FULL CG)
+The signal source — a vast bioluminescent cavern. Full CG environment.
+10+ VFX shots, photoreal water lighting required.
+
+INT. MILITARY SUBMARINE — 3 SCENES
+The rival military operation, led by ADMIRAL VOSS (50s, supporting).
+Three scenes; could be practical set or VFX extension depending on
+production design.
+
+NIGHT SHOOTS — Act 2 is approximately 40% nighttime / interior-dark
+to maintain the deep-sea aesthetic.
+
+ACT 3 (pp 86-110) — RESURFACE
+-----------------------------------------------------------
+EXT. UNDERWATER — STATION COLLAPSE FINALE
+Complex VFX action climax: imploding station, debris field, structural
+collapse practical-CG hybrid. 10+ VFX shots.
+
+EXT. OCEAN SURFACE — DAY (MARINE + AERIAL UNIT)
+Rescue sequence: surfacing submersible, helicopter extraction,
+ocean-skimming pursuit. Requires marine unit + aerial unit.
+
+INT. HOSPITAL, US WEST COAST
+Denouement. Two scenes. The signal echoes through the comatose survivors.
+
+===========================================================
+PRODUCTION SUMMARY
+===========================================================
+
+Total Pages: ~110
+Total Scenes: 58
+Speaking Roles: 4 leads, 8 supporting, 8 day players (TOTAL 20)
+Unique Locations: 8 interior, 6 exterior land, 8 underwater/ocean (TOTAL 22)
+VFX Shots (total): 45+ (estimate)
+Shooting Days (estimate): minimum 40 production days
+
+NOTABLE PRODUCTION REQUIREMENTS:
+- Underwater filming unit (specialized equipment + safety divers)
+- Deep-sea station set build (~4,000 sq ft practical set)
+- Full CG alien environments (photoreal water lighting)
+- Helicopter aerial unit (surface sequences)
+- Marine unit (ship-based photography)
+- Night shoots (~40% of schedule)
+- Military vehicle props / VFX (submarine interior)
+- Practical-CG hybrid finale (station collapse)
+
+WRITER NOTE:
+This is a tight, character-driven thriller in the tradition of
+"The Abyss" (1989) and "Sphere" (1998), updated for contemporary
+underwater VFX techniques. Three leads carry the emotional throughline;
+the alien signal acts as a unifying mystery rather than a creature
+antagonist (the threat is internal and psychological).

@@ -1,0 +1,65 @@
+{
+  "project": "The Deep Horizon",
+  "key_personnel": [
+    {
+      "name": "Marcus Webb",
+      "role": "Director",
+      "notable_credits": [
+        "Neon Drift (2024, action, $8M budget, $12M gross)",
+        "Static Line (2022, thriller, $3M budget, $6M gross)"
+      ],
+      "genre_experience": "Action/Thriller — NO sci-fi experience",
+      "budget_tier_experience": "Largest prior: $8M (Neon Drift). The Deep Horizon at $7.26M is in-tier on budget but ahead of his complexity record.",
+      "notes": "Two completed features, both profitable but small scale. Never managed a VFX-heavy production. No underwater filming experience."
+    },
+    {
+      "name": "Jordan Chen",
+      "role": "Writer",
+      "notable_credits": [
+        "Original screenplay — first produced credit"
+      ],
+      "genre_experience": "Unknown — first feature",
+      "budget_tier_experience": "N/A — first produced credit",
+      "notes": "Nicholl Fellowship semi-finalist 2023. Screenwriting competition winner. No produced credits prior to this project."
+    },
+    {
+      "name": "Lisa Park",
+      "role": "Producer",
+      "notable_credits": [
+        "Neon Drift (2024)",
+        "Three indie films ($1-3M range, 2019-2023)"
+      ],
+      "genre_experience": "Action — no sci-fi, no VFX-heavy projects",
+      "budget_tier_experience": "Largest prior: $8M (Neon Drift, same project as director)",
+      "notes": "Has worked with director Marcus Webb before. Strong director-producer chemistry. Never managed VFX-heavy production. Never managed underwater unit."
+    },
+    {
+      "name": "David Okafor",
+      "role": "Executive Producer",
+      "notable_credits": [
+        "Various — primarily financing role across 5 projects 2020-2025"
+      ],
+      "genre_experience": "Finance background, not creative",
+      "budget_tier_experience": "Has financed projects up to $15M",
+      "notes": "New to creative film producing. Background in real estate investment. Brings capital, not production expertise."
+    },
+    {
+      "name": "TBD",
+      "role": "VFX Supervisor",
+      "notable_credits": [],
+      "genre_experience": "N/A",
+      "budget_tier_experience": "N/A",
+      "notes": "POSITION NOT YET FILLED. Critical gap for a 45-shot underwater/CG project."
+    },
+    {
+      "name": "TBD",
+      "role": "Marine Unit Director",
+      "notable_credits": [],
+      "genre_experience": "N/A",
+      "budget_tier_experience": "N/A",
+      "notes": "POSITION NOT YET FILLED. Underwater photography lead is missing."
+    }
+  ],
+  "attached_cast": [],
+  "casting_notes": "No A-list cast attached. Casting is in discussion phase only."
+}
