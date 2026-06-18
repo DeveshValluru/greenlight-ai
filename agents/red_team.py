@@ -5,7 +5,7 @@ Reads all 5 Phase 1 reports, issues formal challenges, tracks resolutions,
 and can dynamically recruit @SpecialistOnCall via Band's participant tools.
 
 Framework: Google ADK (via Band's adapter)
-Provider:  Gemini 2.5 Flash (free tier)
+Provider:  Gemini 2.5 Pro (heavy tier — adversarial reasoning)
 
 Run with:  python agents/red_team.py
 """

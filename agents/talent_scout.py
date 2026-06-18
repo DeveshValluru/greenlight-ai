@@ -2,7 +2,7 @@
 @TalentScout — Phase 1 specialist evaluating personnel track records.
 
 Framework: LangGraph (via Band's adapter)
-Provider:  Groq Qwen3 32B (free tier — separate pool from BudgetAuditor's Llama)
+Provider:  Gemini 2.5 Flash-Lite (light tier — personnel evaluation)
 
 Run with:  python agents/talent_scout.py
 """

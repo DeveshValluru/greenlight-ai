@@ -2,10 +2,7 @@
 @CRO (Chief Risk Officer) — Phase 3 synthesizer producing the final scorecard.
 
 Framework: CrewAI (via Band's adapter)
-Provider:  Featherless DeepSeek R1 Distill Llama 70B (trial — partner prize qualifier)
-
-DeepSeek R1's structured reasoning fits the CRO's weighted scoring and
-verdict synthesis better than a generic chat model.
+Provider:  Gemini 2.5 Pro — heavy reasoning for weighted-score synthesis
 
 Run with:  python agents/cro.py
 """
@@ -37,16 +34,10 @@ async def main() -> None:
     cfg = get_config("cro")
     ws_url, rest_url = band_endpoints()
 
-    # CrewAI uses LiteLLM. Set env vars + model prefix per provider.
-    provider = cfg["provider"]
-    if provider == "gemini":
-        os.environ.setdefault("GEMINI_API_KEY", cfg["api_key"])
-        os.environ.setdefault("GOOGLE_API_KEY", cfg["api_key"])
-        model_str = f"gemini/{cfg['model']}"
-    else:  # featherless (OpenAI-compatible)
-        os.environ["OPENAI_API_KEY"] = cfg["api_key"]
-        os.environ["OPENAI_API_BASE"] = cfg["base_url"]
-        model_str = f"openai/{cfg['model']}"
+    # CrewAI uses LiteLLM. For Gemini: "gemini/<model>" + GEMINI_API_KEY.
+    os.environ.setdefault("GEMINI_API_KEY", cfg["api_key"])
+    os.environ.setdefault("GOOGLE_API_KEY", cfg["api_key"])
+    model_str = f"gemini/{cfg['model']}"
 
     adapter = CrewAIAdapter(
         model=model_str,

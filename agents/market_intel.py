@@ -2,7 +2,7 @@
 @MarketIntel — Phase 1 specialist researching comparable films and ROI projections.
 
 Framework: Google ADK (via Band's adapter)
-Provider:  Gemini 2.5 Flash (free tier)
+Provider:  Gemini 2.5 Flash-Lite (light tier — knowledge retrieval)
 
 Run with:  python agents/market_intel.py
 """

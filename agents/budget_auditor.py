@@ -2,7 +2,7 @@
 @BudgetAuditor — Phase 1 specialist auditing production budgets.
 
 Framework: LangGraph (via Band's adapter)
-Provider:  Groq Llama 3.3 70B (free tier)
+Provider:  Gemini 2.5 Pro (heavy tier — cross-reference numeric work)
 
 The Groq endpoint is OpenAI-compatible, so we use langchain-openai's
 ChatOpenAI with a custom base_url to point at Groq.

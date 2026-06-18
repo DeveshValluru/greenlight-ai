@@ -1,37 +1,28 @@
 """
 Provider routing for GreenLight AI agents.
 
-Multi-model architecture — each agent uses a model matched to its workload:
+Single provider (Gemini), three model tiers — each agent uses a model
+matched to its workload:
 
-  Workload tier         Model                                        Why
+  Tier            Model                          Why
   ─────────────────────────────────────────────────────────────────────────────
-  Heavy reasoning       Gemini 2.5 Pro                               Cross-agent
-                                                                     numeric
-                                                                     reconciliation,
-                                                                     adversarial
-                                                                     forensics
-  Light reasoning       Gemini 2.5 Flash                             Document parse,
-                                                                     knowledge
-                                                                     retrieval,
-                                                                     personnel lookup
-  Domain (legal)        Featherless Llama 3.3 70B Instruct          Legal/compliance
-                                                                     domain coverage +
-                                                                     partner-prize
-                                                                     eligibility
-  Domain (verdict)      Featherless DeepSeek R1 Distill 70B         Structured
-                                                                     reasoning for
-                                                                     weighted-score
-                                                                     synthesis
+  Lite            gemini-2.5-flash-lite          Light lookups, short outputs
+                                                 (TalentScout person eval,
+                                                  MarketIntel comp retrieval)
+  Standard        gemini-2.5-flash               Document parse + structured
+                                                 output (ScriptAnalyst)
+  Heavy           gemini-2.5-pro                 Cross-agent numerical
+                                                 reasoning, adversarial
+                                                 forensics, weighted synthesis
+                                                 (BudgetAuditor, LegalEagle,
+                                                  RedTeam, CRO)
 
-Provider count:   2 (Gemini + Featherless)
-Distinct models:  4 (Flash, Pro, Llama 70B, DeepSeek R1)
+Provider count:   1 (Gemini)
+Distinct models:  3 (flash-lite, flash, pro)
 
-If FEATHERLESS_API_KEY is not set, the two Featherless agents fall back to
-Gemini Flash automatically so local dev never blocks on a paid key.
-
-Each agent file calls `get_config(<short_name>)` to discover its model and
-credentials. The Band framework adapter is then constructed around the
-returned config.
+All seven agents authenticate to the same Gemini OpenAI-compatible endpoint
+with a single GOOGLE_API_KEY, but the per-agent model selection means we
+spend Pro tokens only on heavy reasoning and lite tokens on simple lookups.
 """
 from __future__ import annotations
 
@@ -53,42 +44,37 @@ class ProviderConfig(TypedDict):
     base_url: str
     model: str
     api_key: str
-    provider: str       # "gemini" | "featherless"
-    workload_tier: str  # "heavy" | "light" | "domain"
+    provider: str       # "gemini"
+    workload_tier: str  # "lite" | "standard" | "heavy"
 
 
-# ----- Model definitions -----
+# ----- Model definitions (all Gemini via OpenAI-compatible endpoint) -----
+
+_GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai/"
+_GEMINI_KEY_ENV = "GOOGLE_API_KEY"
+
+_GEMINI_LITE = {
+    "base_url": _GEMINI_BASE,
+    "model": "gemini-2.5-flash-lite",
+    "api_key_env": _GEMINI_KEY_ENV,
+    "provider": "gemini",
+    "workload_tier": "lite",
+}
 
 _GEMINI_FLASH = {
-    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+    "base_url": _GEMINI_BASE,
     "model": "gemini-2.5-flash",
-    "api_key_env": "GOOGLE_API_KEY",
+    "api_key_env": _GEMINI_KEY_ENV,
     "provider": "gemini",
-    "workload_tier": "light",
+    "workload_tier": "standard",
 }
 
 _GEMINI_PRO = {
-    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai/",
+    "base_url": _GEMINI_BASE,
     "model": "gemini-2.5-pro",
-    "api_key_env": "GOOGLE_API_KEY",
+    "api_key_env": _GEMINI_KEY_ENV,
     "provider": "gemini",
     "workload_tier": "heavy",
-}
-
-_FEATHERLESS_LLAMA = {
-    "base_url": "https://api.featherless.ai/v1",
-    "model": "meta-llama/Llama-3.3-70B-Instruct",
-    "api_key_env": "FEATHERLESS_API_KEY",
-    "provider": "featherless",
-    "workload_tier": "domain",
-}
-
-_FEATHERLESS_DEEPSEEK = {
-    "base_url": "https://api.featherless.ai/v1",
-    "model": "deepseek-ai/DeepSeek-R1-Distill-Llama-70B",
-    "api_key_env": "FEATHERLESS_API_KEY",
-    "provider": "featherless",
-    "workload_tier": "domain",
 }
 
 
@@ -96,26 +82,16 @@ _FEATHERLESS_DEEPSEEK = {
 
 _ASSIGNMENTS: dict[str, dict] = {
     # Phase 1 specialists
-    "script_analyst": _GEMINI_FLASH,         # parse + structure a screenplay
-    "budget_auditor": _GEMINI_PRO,           # cross-reference VFX, locations, days
-    "market_intel":   _GEMINI_FLASH,         # knowledge retrieval of comps
-    "legal_eagle":    _FEATHERLESS_LLAMA,    # legal domain coverage
-    "talent_scout":   _GEMINI_FLASH,         # personnel evaluation
+    "script_analyst": _GEMINI_FLASH,    # parse + structure a screenplay
+    "budget_auditor": _GEMINI_PRO,      # cross-reference VFX, locations, days
+    "market_intel":   _GEMINI_LITE,     # lookup comparable films
+    "legal_eagle":    _GEMINI_PRO,      # legal/compliance reasoning
+    "talent_scout":   _GEMINI_LITE,     # personnel evaluation
     # Phase 2 adversary
-    "red_team":       _GEMINI_PRO,           # heavy reasoning across all 5 reports
+    "red_team":       _GEMINI_PRO,      # heavy reasoning across all 5 reports
     # Phase 3 synthesizer
-    "cro":            _FEATHERLESS_DEEPSEEK, # structured weighted scoring
+    "cro":            _GEMINI_PRO,      # weighted-score synthesis + verdict
 }
-
-
-def _fallback_if_missing_key(raw: dict) -> dict:
-    """If a Featherless slot is configured but FEATHERLESS_API_KEY is unset,
-    fall back to Gemini Flash so dev still works."""
-    if raw["provider"] != "featherless":
-        return raw
-    if os.getenv("FEATHERLESS_API_KEY") and os.getenv("FEATHERLESS_API_KEY") != "replace-me":
-        return raw
-    return _GEMINI_FLASH
 
 
 def get_config(agent_name: str) -> ProviderConfig:
@@ -131,14 +107,12 @@ def get_config(agent_name: str) -> ProviderConfig:
             f"Add a row to _ASSIGNMENTS in agents/llm_router.py."
         )
 
-    raw = _fallback_if_missing_key(raw)
-
     key_env = raw["api_key_env"]
     api_key = os.getenv(key_env)
     if not api_key or api_key == "replace-me":
         raise EnvironmentError(
             f"Missing or unset {key_env} for agent {agent_name!r}. "
-            f"Edit .env and provide a real key for provider {raw['provider']!r}."
+            f"Add a real Gemini API key to .env."
         )
 
     return {

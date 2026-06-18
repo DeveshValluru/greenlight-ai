@@ -1,7 +1,7 @@
 # 🎬 GreenLight AI
 
 > **The AI investment committee that never sleeps.**
-> 7 specialized agents · 3 framework adapters · 4 models · 1 Band room.
+> 7 specialized agents · 3 framework adapters · 3 model tiers · 1 Band room.
 
 GreenLight AI is a multi-agent due-diligence system for film investors. A
 producer pastes a project package (script, budget, crew, deal memos) into a
@@ -52,25 +52,26 @@ the same Band room. **The chat history IS the audit trail.**
 
 ### Agent ↔ framework ↔ model matrix
 
-Different agents use different framework adapters and different models, chosen
-to match each agent's workload tier:
+Different agents use different framework adapters and different Gemini
+model tiers, chosen to match each agent's workload:
 
-| Agent | Framework | Model | Tier | Why this model |
-|-------|-----------|-------|------|---------------|
-| **@ScriptAnalyst** | Google ADK | Gemini 2.5 Flash | light | document parse + structure |
-| **@BudgetAuditor** | LangGraph | Gemini 2.5 Pro | heavy | cross-reference numeric data across reports |
-| **@MarketIntel** | Google ADK | Gemini 2.5 Flash | light | knowledge retrieval of comparable films |
-| **@LegalEagle** | LangGraph | Featherless Llama 3.3 70B | domain | legal/compliance domain coverage |
-| **@TalentScout** | LangGraph | Gemini 2.5 Flash | light | personnel evaluation |
-| **@RedTeam** | Google ADK | Gemini 2.5 Pro | heavy | adversarial reasoning across 5 reports |
-| **@CRO** | CrewAI | Featherless DeepSeek R1 70B | domain | structured weighted-score synthesis |
+| Agent | Framework | Model | Tier | Why this tier |
+|-------|-----------|-------|------|--------------|
+| **@ScriptAnalyst** | Google ADK | gemini-2.5-flash | standard | document parse + structure |
+| **@BudgetAuditor** | LangGraph | gemini-2.5-pro | heavy | numeric cross-reference across reports |
+| **@MarketIntel** | Google ADK | gemini-2.5-flash-lite | lite | comp lookup, knowledge retrieval |
+| **@LegalEagle** | LangGraph | gemini-2.5-pro | heavy | legal/compliance reasoning |
+| **@TalentScout** | LangGraph | gemini-2.5-flash-lite | lite | personnel evaluation |
+| **@RedTeam** | Google ADK | gemini-2.5-pro | heavy | adversarial reasoning across 5 reports |
+| **@CRO** | CrewAI | gemini-2.5-pro | heavy | weighted-score synthesis + verdict |
 
-That's **3 framework adapters · 2 providers · 4 distinct models** running
+**3 framework adapters · 1 provider · 3 distinct model tiers** running
 together through Band's protocol. The routing logic lives in
 [agents/llm_router.py](agents/llm_router.py).
 
-If `FEATHERLESS_API_KEY` isn't set, the two Featherless slots fall back to
-Gemini Flash automatically so local dev never blocks.
+Spending Pro tokens on the heavy-reasoning agents and Lite tokens on the
+quick lookups means the system runs on Google's free Gemini quota for
+development and prototype demos.
 
 ---
 
@@ -98,10 +99,7 @@ greenlight-ai/
 ### 0. Prerequisites
 - Python 3.10+
 - A [Band](https://app.band.ai) account
-- A free [Gemini](https://aistudio.google.com/app/apikey) API key
-- *(Optional)* A [Featherless](https://featherless.ai) trial key with promo
-  `BOA26` — required for the multi-provider showcase. Without it, the two
-  Featherless agents fall back to Gemini Flash automatically.
+- A free [Gemini](https://aistudio.google.com/app/apikey) API key (only key needed)
 
 ### 1. Install
 ```bash
@@ -232,8 +230,7 @@ for the same reason.
 - [x] Public GitHub repository — https://github.com/DeveshValluru/greenlight-ai
 - [x] ≥ 3 agents collaborating through Band — we have 7
 - [x] Cross-framework demonstration — 3 adapters (Google ADK, LangGraph, CrewAI)
-- [x] Multi-model demonstration — 4 models (Flash, Pro, Llama, DeepSeek)
-- [x] Multi-provider demonstration — Gemini + Featherless
+- [x] Multi-model demonstration — 3 Gemini tiers (Flash-Lite, Flash, Pro) routed per workload
 - [ ] Cover image
 - [ ] Demo video (script in [docs/demo_script.md](docs/demo_script.md))
 - [ ] Pitch deck (outline in [docs/pitch_deck.md](docs/pitch_deck.md))

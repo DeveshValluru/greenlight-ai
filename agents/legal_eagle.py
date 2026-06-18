@@ -2,11 +2,11 @@
 @LegalEagle — Phase 1 specialist reviewing IP, guild compliance, and protections.
 
 Framework: LangGraph (via Band's adapter)
-Provider:  Gemini in dev mode, Featherless in demo mode (OpenAI-compatible endpoint)
+Provider:  Gemini 2.5 Pro (legal reasoning needs heavy tier)
 
 Originally wired to PydanticAI, but PydanticAI's strict output validation
 caused identity hallucinations and `[[uuid]]` mention leaks. Swapped to
-LangGraph for reliable markdown output. Same agent_id, same handle on Band.
+LangGraph for reliable markdown output.
 
 Run with:  python agents/legal_eagle.py
 """
