@@ -79,18 +79,24 @@ _GEMINI_PRO = {
 
 
 # ----- Per-agent assignments -----
+#
+# Quota-aware: Gemini 2.5 Pro on the free tier is capped at 50 requests
+# per day, which the room blows through in 1-2 demo runs. So we route the
+# heavy agents to gemini-2.5-flash (1,500 RPD) — still capable for these
+# structured-report tasks, and it lets the demo run repeatedly during
+# recording without hitting 429s.
 
 _ASSIGNMENTS: dict[str, dict] = {
     # Phase 1 specialists
     "script_analyst": _GEMINI_FLASH,    # parse + structure a screenplay
-    "budget_auditor": _GEMINI_PRO,      # cross-reference VFX, locations, days
+    "budget_auditor": _GEMINI_FLASH,    # cross-reference VFX, locations, days
     "market_intel":   _GEMINI_LITE,     # lookup comparable films
-    "legal_eagle":    _GEMINI_PRO,      # legal/compliance reasoning
+    "legal_eagle":    _GEMINI_FLASH,    # legal/compliance reasoning
     "talent_scout":   _GEMINI_LITE,     # personnel evaluation
     # Phase 2 adversary
-    "red_team":       _GEMINI_PRO,      # heavy reasoning across all 5 reports
+    "red_team":       _GEMINI_FLASH,    # cross-examination across all 5 reports
     # Phase 3 synthesizer
-    "cro":            _GEMINI_PRO,      # weighted-score synthesis + verdict
+    "cro":            _GEMINI_FLASH,    # weighted-score synthesis + verdict
 }
 
 
