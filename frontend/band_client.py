@@ -73,18 +73,29 @@ def _agent_credentials() -> tuple[str, str]:
 
 
 def room_id(phase: str = "briefing") -> str:
-    """Resolve the Band room ID for a phase (with single-room fallback)."""
+    """Resolve the Band room ID for a given phase.
+
+    Order of preference (single-room mode wins if GREENLIGHT_ROOM_ID is set
+    so leftover breakout vars from earlier experiments don't break things):
+
+      1. GREENLIGHT_ROOM_ID (single-room, recommended)
+      2. Phase-specific BRIEFING_ROOM_ID / CROSS_EXAM_ROOM_ID / VERDICT_ROOM_ID
+    """
+    glr = _secret("GREENLIGHT_ROOM_ID")
+    if glr:
+        return glr
+
     by_phase = {
         "briefing":   "BRIEFING_ROOM_ID",
         "cross_exam": "CROSS_EXAM_ROOM_ID",
         "verdict":    "VERDICT_ROOM_ID",
     }
-    for var in (by_phase.get(phase), "GREENLIGHT_ROOM_ID"):
-        if not var:
-            continue
+    var = by_phase.get(phase)
+    if var:
         val = _secret(var)
         if val:
             return val
+
     raise EnvironmentError(
         "Missing a Band room ID. Set GREENLIGHT_ROOM_ID in .env "
         "(single-room mode) or one of BRIEFING_ROOM_ID / CROSS_EXAM_ROOM_ID / "
