@@ -52,26 +52,54 @@ the same Band room. **The chat history IS the audit trail.**
 
 ### Agent ↔ framework ↔ model matrix
 
-Different agents use different framework adapters and different Gemini
-model tiers, chosen to match each agent's workload:
+Each agent uses a different framework adapter and a Gemini model tier
+matched to its workload:
 
-| Agent | Framework | Model | Tier | Why this tier |
-|-------|-----------|-------|------|--------------|
-| **@ScriptAnalyst** | Google ADK | gemini-2.5-flash | standard | document parse + structure |
-| **@BudgetAuditor** | LangGraph | gemini-2.5-pro | heavy | numeric cross-reference across reports |
-| **@MarketIntel** | Google ADK | gemini-2.5-flash-lite | lite | comp lookup, knowledge retrieval |
-| **@LegalEagle** | LangGraph | gemini-2.5-pro | heavy | legal/compliance reasoning |
+| Agent | Framework | Model | Tier | Workload |
+|-------|-----------|-------|------|----------|
+| **@ScriptAnalyst** | Google ADK | gemini-2.5-flash | standard | parse + structure a screenplay |
+| **@BudgetAuditor** | LangGraph | gemini-2.5-flash | standard | numeric cross-reference across reports |
+| **@MarketIntel** | Google ADK | gemini-2.5-flash-lite | lite | lookup comparable films |
+| **@LegalEagle** | LangGraph | gemini-2.5-flash | standard | legal/compliance reasoning |
 | **@TalentScout** | LangGraph | gemini-2.5-flash-lite | lite | personnel evaluation |
-| **@RedTeam** | Google ADK | gemini-2.5-pro | heavy | adversarial reasoning across 5 reports |
-| **@CRO** | CrewAI | gemini-2.5-pro | heavy | weighted-score synthesis + verdict |
+| **@RedTeam** | Google ADK | gemini-2.5-flash | standard | adversarial reasoning across 5 reports |
+| **@CRO** | CrewAI | gemini-2.5-flash | standard | weighted-score synthesis + verdict |
 
-**3 framework adapters · 1 provider · 3 distinct model tiers** running
+**3 framework adapters · 1 provider · 2 active model tiers** running
 together through Band's protocol. The routing logic lives in
-[agents/llm_router.py](agents/llm_router.py).
+[agents/llm_router.py](agents/llm_router.py) and the configuration also
+includes a `gemini-2.5-pro` "heavy" tier ready to swap in for any agent.
 
-Spending Pro tokens on the heavy-reasoning agents and Lite tokens on the
-quick lookups means the system runs on Google's free Gemini quota for
-development and prototype demos.
+The standard tier (`gemini-2.5-flash`) was chosen over Pro for the demo
+because Pro's free-tier daily request cap is 50 — the seven-agent debate
+exhausts that within 1-2 demo runs. Flash has 1,500 daily requests, which
+lets the demo run many times during recording without hitting 429s.
+
+### How the agents coordinate
+
+There's **no central orchestrator** for the default demo. Each agent's
+system prompt contains:
+
+- **`<mandatory_initial_output>`** — every specialist MUST produce a
+  primary report on first invocation, even if dependencies (other agents'
+  reports) aren't yet available. Cross-reference sections mark
+  `PENDING — will update when @SourceAgent posts` rather than blocking.
+- **`<closing_handoff>`** — each specialist ends its report with
+  `@RedTeam my report is complete and ready for your cross-examination.`
+  RedTeam ends its summary with `@CRO ready for verdict`. The chain
+  self-propagates through Band's `@mention` router.
+- **`<response_discipline>`** — agents respond ONLY when asked a direct
+  question or assigned a task. Citations and references in other agents'
+  messages do NOT trigger a reply.
+- **`<no_ack_messages>`** — absolute ban on content-free messages
+  (`Acknowledged`, `Standing by`, `Confirmed`, `Thank you`). If an agent
+  has nothing substantive to add, it stays silent. This blocks the
+  infinite acknowledgment loops that emerge naturally when agents
+  reference each other.
+
+These four prompt blocks are what make a pure mention-routed system stable.
+Without them, agents either stall waiting for peers, never trigger the
+next phase, or chat-spam each other with social closures.
 
 ---
 
